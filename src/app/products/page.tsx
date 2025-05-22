@@ -3,17 +3,24 @@ import { products } from "@/lib/productData";
 import { Heart, Search, Star, ShoppingCart } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 
 export default function Products() {
   const [sortOption, setSortOption] = useState("");
 
+  const [showPopup, setShowPopup] = useState<string | false>(false);
   const [selectedCategories, setSelectedCategories] = useState<string[]>([]);
   const [searchQuery, setSearchQuery] = useState("");
 
   // Get unique category list from products
   const categories = [...new Set(products.map((p) => p.category))];
 
+  useEffect(() => {
+    if (showPopup) {
+      const timer = setTimeout(() => setShowPopup(false), 5000);
+      return () => clearTimeout(timer);
+    }
+  }, [showPopup]);
   // Filtered products based on search and category
   const filteredProducts = products
     .filter((product) => {
@@ -57,6 +64,7 @@ export default function Products() {
       : [...cart, { ...product, quantity: 1 }];
 
     localStorage.setItem("cart", JSON.stringify(updatedCart));
+    setShowPopup(`${product.title} is added to cart!`);
   };
 
   function handleSearch(): void {
@@ -187,6 +195,11 @@ export default function Products() {
                         </div>
                       </div>
 
+                      {showPopup && (
+                        <div className="fixed top-5 right-5 bg-green-500 w-[300px] text-center text-white px-4 py-2 rounded shadow-lg z-50">
+                          {showPopup}
+                        </div>
+                      )}
                       <div className="cart px-4 pb-4 pt-2">
                         <button
                           onClick={() => handleAddToCart(product)}
